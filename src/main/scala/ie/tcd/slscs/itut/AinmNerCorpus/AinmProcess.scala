@@ -40,6 +40,17 @@ object AinmProcess {
   val sentdetect = new SentenceDetectorME(sentmodel)
   val tokmodel = new TokenizerModel(gatok)
   val tokdetect = new TokenizerME(tokmodel)
+
+  implicit def spanToTuple(s: Span):(Int, Int) = (s.s, s.e)
+  implicit def tupleToSpan(t: (Int, Int)): Span = new Span(t._1, t._2)
+
+  def spanner(s: List[String]):List[(Int, Int)] = {
+    def spaninner(start: Int, l: List[String], acc: List[(Int, Int)]):List[(Int, Int)] = l match {
+      case x :: xs => spaninner(start + x.length + 1, xs, acc :+ (start, start + x.length))
+      case nil => acc
+    }
+    spaninner(0, s, List[(Int, Int)]())
+  }
 }
 
 // set tabstop=2
