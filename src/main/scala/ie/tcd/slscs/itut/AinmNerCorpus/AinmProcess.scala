@@ -24,10 +24,22 @@
 package ie.tcd.slscs.itut.AinmNerCorpus
 
 import scala.xml._
+import scala.io.Source
 import java.io.FileInputStream; 
 import java.io.InputStream; 
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.TokenizerME; 
 import opennlp.tools.tokenize.TokenizerModel; 
 import opennlp.tools.util.Span; 
+
+object AinmProcess {
+  val gasent: InputStream = getClass.getResourceAsStream("/ie/tcd/slscs/itut/AinmNerCorpus/ga-sent.bin")
+  val gatok: InputStream = getClass.getResourceAsStream("/ie/tcd/slscs/itut/AinmNerCorpus/ga-token.bin")
+  val sentmodel = new SentenceModel(gasent)
+  val sentdetect = new SentenceDetectorME(sentmodel)
+  val tokmodel = new TokenizerModel(gatok)
+  val tokdetect = new TokenizerME(tokmodel)
+}
 
 // set tabstop=2
