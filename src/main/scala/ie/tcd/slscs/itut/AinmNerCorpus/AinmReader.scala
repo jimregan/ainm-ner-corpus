@@ -24,11 +24,6 @@
 package ie.tcd.slscs.itut.AinmNerCorpus
 
 import scala.xml._
-import java.io.FileInputStream; 
-import java.io.InputStream; 
-import opennlp.tools.tokenize.TokenizerME; 
-import opennlp.tools.tokenize.TokenizerModel; 
-import opennlp.tools.util.Span; 
 
 case class Paragraph(children: List[TextPiece]) {
   def getText: String = children.map{e => e.getText}.mkString("")
