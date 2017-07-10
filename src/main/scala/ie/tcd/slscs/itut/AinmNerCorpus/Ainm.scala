@@ -35,9 +35,12 @@ trait TextPiece
 case class RawText(t: String) extends TextPiece
 abstract class Mention(text: String) extends TextPiece
 trait PlaceRec
-case class PersonMention(id: String, text: String) extends Mention(text)
-case class Opus(kind: String, BaseForm: String, text: String) extends Mention(text)
-case class PlaceName(id: String, BaseForm: String, text: String, ainm: Boolean = true, geonames: Boolean = false) extends Mention(text) with PlaceRec
+case class PersonMention(id: String, baseform: String, text: String) extends Mention(text)
+case class Opus(kind: String, baseform: String, text: String) extends Mention(text)
+case class Conradh(kind: String, baseform: String, text: String) extends Mention(text)
+case class Party(baseform: String, text: String) extends Mention(text)
+case class PlaceName(id: String, baseform: String, text: String, geonames: String, foreign: Boolean = false) extends Mention(text) with PlaceRec
+case class EduInst(baseform: String, text: String, geonames: String) extends Mention(text)
 case class Place(id: String, text: String) extends PlaceRec
 case class Date(date: String, circa: Boolean = false)
 
@@ -82,16 +85,31 @@ object TEIHeader {
     val faith = (bio \\ "biography" \ "header" \ "fileDesc" \ "titleStmt" \ "faith").text
     val bplaceid = (bio \\ "biography" \ "header" \ "fileDesc" \ "titleStmt" \ "birthPlace" \ "@id").text
     val bplacegeonames = (bio \\ "biography" \ "header" \ "fileDesc" \ "titleStmt" \ "birthPlace" \ "@geonames").text
+    val bplaceforeign = if ((bio \\ "biography" \ "header" \ "fileDesc" \ "titleStmt" \ "birthPlace" \ "@type").text == "foreign") true else false
     val bplacetxt = (bio \\ "biography" \ "header" \ "fileDesc" \ "titleStmt" \ "birthPlace").text
-    val birthplace = PlaceName(bplaceid, "", bplacetxt, bplaceid != "", bplacegeonames != "")
+    val birthplace = PlaceName(bplaceid, "", bplacetxt, bplacegeonames, bplaceforeign)
     val authors = (bio \\ "biography" \ "header" \ "fileDesc" \ "titleStmt" \ "author").map{ c => c.text}.toList
     TEIHeader(id, title, titlenote, forename, surname, birth, death, sex, floruit,
               birthplace, faith, schools, universities, occupations, authors)
   }
-  /*
-  def readParagraphs(n: Node): List[Paragraph] = {
-    val paragraphs = (n \\ "p")
+  def readParagraphs(n: Node): List[Paragraph] = (n \\ "p").toList.map{readParagraph}.toList
+  def readParagraph(n: Node): Paragraph = n match {
+    //case e @ Elem(_, "p", _, _, _, children: _*) => Paragraph(children.map{readParagraphPiece}.toList)
+    case <p>{children @ _* }</p> => Paragraph(children.map{readParagraphPiece}.toList)
+    case _ => throw new Exception("Unexpected element" + n.toString)
   }
-  */
+  def readParagraphPiece(n: Node): TextPiece = n match {
+    case scala.xml.Text(t) => RawText(t)
+    case <em>{em}</em> => RawText(em.text)
+    case <blockquote>{bq}</blockquote> => RawText(bq.text)
+    case <hide>{h}</hide> => RawText("")
+    case e @ Elem(_, "persName", attribs, _, _) => PersonMention(attribs.get("id").toString, attribs.get("baseform").toString, e.text)
+    case e @ Elem(_, "placeName", attribs, _, _) => PlaceName(attribs.get("id").toString, attribs.get("baseform").toString, e.text, attribs.get("geonames").toString, attribs.get("type").toString == "foreign")
+    case e @ Elem(_, "party", attribs, _, _) => Party(attribs.get("baseform").toString, e.text)
+    case e @ Elem(_, "opus", attribs, _, _) => Opus(attribs.get("type").toString, attribs.get("baseform").toString, e.text)
+    case e @ Elem(_, "conradh", attribs, _, _) => Opus(attribs.get("type").toString, attribs.get("baseform").toString, e.text)
+    case e @ Elem(_, "eduInst", attribs, _, _) => EduInst(attribs.get("baseform").toString, e.text, attribs.get("geonames").toString)
+    case _ => throw new Exception("Unexpected element" + n.toString)
+  }
 }
 // set tabstop=2
