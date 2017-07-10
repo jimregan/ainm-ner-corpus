@@ -30,10 +30,18 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel; 
 import opennlp.tools.util.Span; 
 
-case class Paragraph(children: List[TextPiece])
-trait TextPiece
-case class RawText(t: String) extends TextPiece
-abstract class Mention(text: String) extends TextPiece
+case class Paragraph(children: List[TextPiece]) {
+  def getText: String = children.map{e => e.getText}.mkString("")
+}
+trait TextPiece {
+  def getText: String
+}
+case class RawText(t: String) extends TextPiece {
+  def getText: String = t
+}
+abstract class Mention(text: String) extends TextPiece {
+  def getText: String = text
+}
 trait PlaceRec
 case class PersonMention(id: String, baseform: String, text: String) extends Mention(text)
 case class Opus(kind: String, baseform: String, text: String) extends Mention(text)
@@ -51,7 +59,7 @@ case class TEIHeader(id: String, title: String, titlenote: String,
                      faith: String, schools: List[String], 
                      universities: List[String], occupations: List[String],
                      authors: List[String])
-object TEIHeader {
+object TEIReader {
   def readHeader(bio: Node): TEIHeader = {
     def fixupdate(txt: String, att: String, ctxt: String): String = {
       if (att == "" || att == "yyyy-mm-dd") {
