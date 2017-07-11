@@ -41,7 +41,7 @@ object AinmProcess {
   val tokmodel = new TokenizerModel(gatok)
   val tokdetect = new TokenizerME(tokmodel)
 
-  implicit def spanToTuple(s: Span):(Int, Int) = (s.s, s.e)
+  implicit def spanToTuple(s: Span):(Int, Int) = (s.getStart, s.getEnd)
   implicit def tupleToSpan(t: (Int, Int)): Span = new Span(t._1, t._2)
 
   def spanner(s: List[String]):List[(Int, Int)] = {
