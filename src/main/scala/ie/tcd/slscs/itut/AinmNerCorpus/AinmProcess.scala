@@ -139,6 +139,9 @@ object AinmProcess {
     }
     l.map{e => filterinner(e, kind)}
   }
+
+  def splitParagraph(p: Paragraph): Array[Span] = sentdetect.sentPosDetect(p.getText)
+  def splitParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{splitParagraph}
 }
 
 object OpenNLPConverter extends App {
