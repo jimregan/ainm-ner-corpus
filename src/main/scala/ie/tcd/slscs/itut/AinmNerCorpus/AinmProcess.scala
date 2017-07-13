@@ -142,10 +142,12 @@ object AinmProcess {
 }
 
 object OpenNLPConverter extends App {
+/*
   val dir = args(0)
   if(dir == null || dir == "") {
     throw new Exception("Specify the directory containing the ainm corpus")
-  }
+  }*/
+  val dir = "/home/jim/www.ainm.ie/"
   val files = AinmProcess.getFileList(dir)
   val docs = files.map{AinmProcess.readFile}
 }
