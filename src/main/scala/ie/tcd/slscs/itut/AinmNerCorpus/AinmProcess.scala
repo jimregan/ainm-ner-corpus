@@ -142,6 +142,8 @@ object AinmProcess {
 
   def splitParagraph(p: Paragraph): Array[Span] = sentdetect.sentPosDetect(p.getText)
   def splitParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{splitParagraph}
+  def tokeniseParagraph(p: Paragraph): Array[Span] = tokdetect.tokenizePos(p.getText)
+  def tokeniseParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{tokeniseParagraph}
 }
 
 object OpenNLPConverter extends App {
