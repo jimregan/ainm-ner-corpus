@@ -63,10 +63,29 @@ object AinmProcess {
     spaninner(0, s, List[(Int, Int)]())
   }
 
+  /**
+   * Load xml files, taken from ainm.ie
+   * These were grabbed with wget -x so the filenames represent the original
+   * URIs: www.ainm.ie/Bio.aspx?ID={id}&xml=true
+   */
   def getFileList(dir: String): List[File] = {
     import ie.tcd.slscs.itut.gramadanj.FileUtils
     val files = FileUtils.getFileListStartsAndEndsWith(dir, "Bio", "xml=true")
     files.toList
+  }
+
+  /**
+   * Get the paragraphs from a single file
+   */
+  def readFile(f: File): List[Paragraph] = {
+    import scala.xml.XML
+    val xml = XML.load(f)
+    readParagraphs(xml)
+  }
+
+  def splitParagraph(p: Paragraph) = {
+    val text = p.getText
+    sentdetect.sentPosDetect(text)
   }
 
   abstract class NERText {
