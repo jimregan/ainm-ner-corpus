@@ -79,7 +79,7 @@ object AinmProcess {
    */
   def readFile(f: File): List[Paragraph] = {
     import scala.xml.XML
-    val xml = XML.load(f)
+    val xml = XML.load(new InputSource(f))
     readParagraphs(xml)
   }
 
