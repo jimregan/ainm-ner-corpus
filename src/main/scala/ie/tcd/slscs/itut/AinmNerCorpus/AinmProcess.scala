@@ -116,6 +116,7 @@ object AinmProcess {
     case Opus("book", bf, t) => TextPart(t)
     case Opus(_, bf, t) => TextPart(t)
     case RawText(t) => TextPart(t)
+    case Anchor(t, _) => TextPart(t)
     case Party(bf, t) => EntityReference(t, "organization")
     case PlaceName(id, bf, t, _, _) => EntityReference(t, "location")
     case EduInst(id, bf, t) => EntityReference(t, "location")
