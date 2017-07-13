@@ -84,11 +84,6 @@ object AinmProcess {
     TEIReader.readParagraphs(xml)
   }
 
-  def splitParagraph(p: Paragraph) = {
-    val text = p.getText
-    sentdetect.sentPosDetect(text)
-  }
-
   abstract class NERText {
     def toText: String
   }
