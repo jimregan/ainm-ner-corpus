@@ -142,7 +142,7 @@ object AinmProcess {
 }
 
 object OpenNLPConverter extends App {
-  def main(args: Array[String]) = {
+  def main(args: Array[String]):Unit = {
     val dir = args(0)
     if(dir == null || dir == "") {
       throw new Exception("Specify the directory containing the ainm corpus")
