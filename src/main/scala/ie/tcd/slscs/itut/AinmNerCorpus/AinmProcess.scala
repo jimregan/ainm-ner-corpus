@@ -100,6 +100,20 @@ object AinmProcess {
     case PlaceName(id, bf, t, _, _) => EntityReference(t, "location")
     case EduInst(id, bf, t) => EntityReference(t, "location")
   }
+
+  def filterNERType(kind: String, l: List[NERText]): List[NERText] = {
+    def filterinner(n: NERText, kind: String): NERText = n match {
+      case EntityReference(t, k) = {
+        if(k == kind) {
+          EntityReference(t, k)
+        } else {
+          TextPart(t)
+        }
+      }
+      case TextPart(t) => TextPart(t)
+    }
+    l.map{e => filterinner(e, kind)}
+  }
 }
 
 // set tabstop=2
