@@ -25,13 +25,14 @@ package ie.tcd.slscs.itut.AinmNerCorpus
 
 import scala.xml._
 import scala.io.Source
-import java.io.FileInputStream; 
-import java.io.InputStream; 
-import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.tokenize.TokenizerME; 
-import opennlp.tools.tokenize.TokenizerModel; 
-import opennlp.tools.util.Span; 
+import java.io.FileInputStream
+import java.io.InputStream
+import opennlp.tools.sentdetect.SentenceDetectorME
+import opennlp.tools.sentdetect.SentenceModel
+import opennlp.tools.tokenize.TokenizerME
+import opennlp.tools.tokenize.TokenizerModel
+import opennlp.tools.util.Span
+import ie.tcd.slscs.itut.AinmNerCorpus._
 
 object AinmProcess {
   import scala.xml.XML
@@ -87,7 +88,7 @@ object AinmProcess {
    * periodicals are treated as organisations, rather than as an "opus",
    * while books, dramas, etc. are just treated as text.
    */
-  def ainmTextPieceToNER(l: List[TextPiece]): List[NERText] = l match {
+  def ainmTextPieceToNER(txt: TextPiece): NERText = txt match {
     case PersonMention(id, bf, t) => EntityReference(t, "person")
     case Conradh(kind, bf, t) => EntityReference(t, "organization")
     case Opus("newspaper", bf, t) => EntityReference(t, "organization")
