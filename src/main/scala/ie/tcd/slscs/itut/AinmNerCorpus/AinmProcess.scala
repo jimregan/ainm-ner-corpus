@@ -67,7 +67,38 @@ object AinmProcess {
     val files = FileUtils.getFileListStartsAndEndsWith(dir, "Bio", "xml=true")
     files.toList
   }
-  
+
+  abstract class NERText {
+    def toText: String
+  }
+  case class TextPart(text: String) extends NERText {
+    def toText = text
+  }
+  case class EntityReference(text: String, kind: String) extends NERText {
+    def toText = " <START:" + kind + "> " + text + " <END> "
+  }
+
+  /**
+   * Simplify the ainm.ie data.
+   * For the most part, this consists of discarding all but the text, and in
+   * normalising the types.
+   * Educational institutions, which may be considered to be both places and
+   * organisations, are treated as organisations. Similarly, newspapers and
+   * periodicals are treated as organisations, rather than as an "opus",
+   * while books, dramas, etc. are just treated as text.
+   */
+  def ainmTextPieceToNER(l: List[TextPiece]): List[NERText] = l match {
+    case PersonMention(id, bf, t) => EntityReference(t, "person")
+    case Conradh(kind, bf, t) => EntityReference(t, "organization")
+    case Opus("newspaper", bf, t) => EntityReference(t, "organization")
+    case Opus("periodical", bf, t) => EntityReference(t, "organization")
+    case Opus("book", bf, t) => TextPart(t)
+    case Opus(_, bf, t) => TextPart(t)
+    case RawText(t) => TextPart(t)
+    case Party(bf, t) => EntityReference(t, "organization")
+    case PlaceName(id, bf, t, _, _) => EntityReference(t, "location")
+    case EduInst(id, bf, t) => EntityReference(t, "location")
+  }
 }
 
 // set tabstop=2
