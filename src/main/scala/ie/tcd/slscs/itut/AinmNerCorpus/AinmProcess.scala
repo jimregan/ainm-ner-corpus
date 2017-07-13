@@ -34,23 +34,40 @@ import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.Span; 
 
 object AinmProcess {
-  val gasent: InputStream = getClass.getResourceAsStream("/ie/tcd/slscs/itut/AinmNerCorpus/ga-sent.bin")
-  val gatok: InputStream = getClass.getResourceAsStream("/ie/tcd/slscs/itut/AinmNerCorpus/ga-token.bin")
-  val sentmodel = new SentenceModel(gasent)
+  import scala.xml.XML
+  import java.io.File
+
+  val gasentbin: InputStream = getClass.getResourceAsStream("/ie/tcd/slscs/itut/AinmNerCorpus/ga-sent.bin")
+  val gatokbin: InputStream = getClass.getResourceAsStream("/ie/tcd/slscs/itut/AinmNerCorpus/ga-token.bin")
+  val sentmodel = new SentenceModel(gasentbin)
   val sentdetect = new SentenceDetectorME(sentmodel)
-  val tokmodel = new TokenizerModel(gatok)
+  val tokmodel = new TokenizerModel(gatokbin)
   val tokdetect = new TokenizerME(tokmodel)
 
   implicit def spanToTuple(s: Span):(Int, Int) = (s.getStart, s.getEnd)
   implicit def tupleToSpan(t: (Int, Int)): Span = new Span(t._1, t._2)
 
-  def spanner(s: List[String]):List[(Int, Int)] = {
+  /**
+   * Get a list of tuples representing the start and ends of each string where
+   * the list concatenated can be considered a single string.
+   * As this is the representation used by OpenNLP's sentence splitter and
+   * tokeniser, it's more convenient to represent entity/text boundaries this
+   * way.
+   */
+  def getSpans(s: List[String]):List[(Int, Int)] = {
     def spaninner(start: Int, l: List[String], acc: List[(Int, Int)]):List[(Int, Int)] = l match {
       case x :: xs => spaninner(start + x.length + 1, xs, acc :+ (start, start + x.length))
       case nil => acc
     }
     spaninner(0, s, List[(Int, Int)]())
   }
+
+  def getFileList(dir: String): List[File] = {
+    import ie.tcd.slscs.itut.gramadanj.FileUtils
+    val files = FileUtils.getFileListStartsAndEndsWith(dir, "Bio", "xml=true")
+    files.toList
+  }
+  
 }
 
 // set tabstop=2

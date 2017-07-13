@@ -97,7 +97,6 @@ object TEIReader {
   }
   def readParagraphs(n: Node): List[Paragraph] = (n \\ "p").toList.map{readParagraph}.toList
   def readParagraph(n: Node): Paragraph = n match {
-    //case e @ Elem(_, "p", _, _, _, children: _*) => Paragraph(children.map{readParagraphPiece}.toList)
     case <p>{children @ _* }</p> => Paragraph(children.map{readParagraphPiece}.toList)
     case _ => throw new Exception("Unexpected element" + n.toString)
   }
