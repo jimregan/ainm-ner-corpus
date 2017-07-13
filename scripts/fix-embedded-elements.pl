@@ -10,6 +10,7 @@ binmode(STDOUT, ":utf8");
 while(<>) {
     s!<persName ([^>]*)>([^<]*)<hide>([^<]*)</hide></persName>!<persName $1>$2</persName><hide>$3</hide>!g;
     s!<persName ([^>]*)>([^<]*)<hide>([^<]*)</hide>([^<]*)</persName>!<persName $1>$2$4</persName><hide>$3</hide>!g;
+    s!<persName ([^>]*)>([^<]*)<hide([^>]*)>([^<]*)</hide>([^<]*)</persName>!<persName $1>$2$5</persName><hide$3>$4</hide>!g;
     s!<persName ([^>]*)>([^<]*)<placeName ([^>]*)>([^<]*)</placeName></persName>!<persName $1>$2$4</persName>!g;
 
     print;
