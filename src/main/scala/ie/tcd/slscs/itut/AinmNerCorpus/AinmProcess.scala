@@ -79,8 +79,9 @@ object AinmProcess {
    */
   def readFile(f: File): List[Paragraph] = {
     import scala.xml.XML
-    val xml = XML.load(new InputSource(f))
-    readParagraphs(xml)
+    import scala.xml.Source
+    val xml = XML.load(Source.fromFile(f))
+    TEIReader.readParagraphs(xml)
   }
 
   def splitParagraph(p: Paragraph) = {
