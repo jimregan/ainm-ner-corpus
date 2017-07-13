@@ -141,4 +141,15 @@ object AinmProcess {
   }
 }
 
+object OpenNLPConverter extends App {
+  def main(args: Array[String]) = {
+    val dir = args(0)
+    if(dir == null || dir == "") {
+      throw new Exception("Specify the directory containing the ainm corpus")
+    }
+    val files = AinmProcess.getFileList(dir)
+    val docs = files.map{AinmProcess.readFile}
+  }
+}
+
 // set tabstop=2
