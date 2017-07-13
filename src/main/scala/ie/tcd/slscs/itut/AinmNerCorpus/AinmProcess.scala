@@ -103,7 +103,7 @@ object AinmProcess {
 
   def filterNERType(kind: String, l: List[NERText]): List[NERText] = {
     def filterinner(n: NERText, kind: String): NERText = n match {
-      case EntityReference(t, k) = {
+      case EntityReference(t, k) => {
         if(k == kind) {
           EntityReference(t, k)
         } else {
