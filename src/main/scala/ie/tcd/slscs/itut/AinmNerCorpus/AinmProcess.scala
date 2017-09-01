@@ -87,7 +87,7 @@ object AinmProcess {
    * periodicals are treated as organisations, rather than as an "opus",
    * while books, dramas, etc. are just treated as text.
    */
-  def ainmTextPieceToNER(l: List[TextPiece]): List[NERText] = l match {
+  def ainmTextPieceToNER(l: TextPiece): NERText = l match {
     case PersonMention(id, bf, t) => EntityReference(t, "person")
     case Conradh(kind, bf, t) => EntityReference(t, "organization")
     case Opus("newspaper", bf, t) => EntityReference(t, "organization")
