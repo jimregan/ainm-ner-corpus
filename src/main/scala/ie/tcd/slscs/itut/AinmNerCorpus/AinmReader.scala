@@ -46,6 +46,9 @@ case class PlaceName(id: String, baseform: String, text: String, geonames: Strin
 case class EduInst(baseform: String, text: String, geonames: String) extends Mention(text)
 case class Place(id: String, text: String) extends PlaceRec
 case class Date(date: String, circa: Boolean = false)
+case class Anchor(text: String, url: String) extends TextPiece {
+  def getText = text
+}
 
 case class TEIHeader(id: String, title: String, titlenote: String,
                      forename: String, surname: String, birth: Date, death: Date,
@@ -104,6 +107,7 @@ object TEIReader {
     case <em>{em}</em> => RawText(em.text)
     case <blockquote>{bq}</blockquote> => RawText(bq.text)
     case <hide>{h}</hide> => RawText("")
+    case a @ Elem(_, "a", attribs, _, _) => Anchor(a.text, attribs.get("href").toString)
     case e @ Elem(_, "persName", attribs, _, _) => PersonMention(attribs.get("id").toString, attribs.get("baseform").toString, e.text)
     case e @ Elem(_, "placeName", attribs, _, _) => PlaceName(attribs.get("id").toString, attribs.get("baseform").toString, e.text, attribs.get("geonames").toString, attribs.get("type").toString == "foreign")
     case e @ Elem(_, "party", attribs, _, _) => Party(attribs.get("baseform").toString, e.text)
