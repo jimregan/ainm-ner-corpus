@@ -116,6 +116,20 @@ object AinmProcess {
   def piecesFromFile(s: String): List[List[NERText]] = {
     piecesFromFile(new File(s))
   }
+  def pieceToString(n: NERText): String = n match {
+    case TextPart(t) => t
+    case EntityReference(a, _) => a
+    case _ => throw new Exception("Unknown object " + n.toString)
+  }
+  def filterByType(n: NERText, nertype: String): NERText = n match {
+    case TextPart(t) => TextPart(t)
+    case EntityReference(a, b) => if(b == nertype) {
+      EntityReference(a, b)
+    } else {
+      TextPart(a)
+    }
+    case _ => throw new Exception("Unknown object " + n.toString)
+  }
 }
 
 // set tabstop=2
