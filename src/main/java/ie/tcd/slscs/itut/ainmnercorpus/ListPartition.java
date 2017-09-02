@@ -43,13 +43,16 @@ public class ListPartition {
 
         for(int i = 0; i < split_sents.size(); i++) {
             end_ents = getEnd(entspans, split_sents.get(i));
+            if(i == split_sents.size() - 1) {
+                end_ents = entspans.length - 1;
+            }
             sent_start = true;
-            System.err.println("I");
+            System.err.println("I: " + para.substring(split_sents.get(i).getStart(), split_sents.get(i).getEnd()));
             for(int j = start_ents; j <= end_ents && j < ents.size(); j++) {
                 if(j > 0) {
                     sent_start = false;
                 }
-                System.err.println("J");
+                System.err.println("J " + start_ents + " " + end_ents);
                 String before = ents.get(j).beforeText();
                 if(!sent_start && !before.equals("")) {
                     sb.append(' ');
@@ -88,7 +91,7 @@ public class ListPartition {
     }
     static int getEnd(Span[] sents, Span entity) {
         int ret = sents.length - 1;
-        for(int i = ret; i > 0; i--) {
+        for(int i = ret; i >= 0; i--) {
             if(sents[i].getEnd() > entity.getEnd()) {
                 ret--;
             }
