@@ -33,30 +33,32 @@ public class ListPartition {
         StringBuilder sb = new StringBuilder();
 
         String para = getEntityBaseString(paragraph);
-        int sentno = 1;
         List<EntityBase> ents = split_entities(sentences, paragraph);
         Span entspans[] = entityToSpan(ents);
-        int last_ent = ents.size();
+        List<Span> split_sents = split_sentences(sentences, paragraph);
+
         int start_ents = 0;
         int end_ents = 0;
-        for(Span sent : split_sentences(sentences, paragraph)) {
-            System.err.println("sent" + sentno);sentno++;
+
+        for(int i = 0; i < split_sents.size(); i++) {
+            Span sent = split_sents.get(i);
+            System.err.println("sent" + i);
             for(int x = start_ents; x < ents.size(); x++) {
                 if(entspans[x].getStart() >= sent.getStart() && entspans[x].getEnd() <= sent.getEnd() && x < ents.size()) {
                     end_ents++;
                 }
             }
             System.err.println(start_ents + " " + end_ents);
-            for(int i = start_ents; i <= end_ents && i < ents.size(); i++) {
-                sb.append(ents.get(i).beforeText());
-                List<Span> toks = partition(tokens, entspans[i]);
-                for(int j = 0; j < toks.size(); j++) {
-                    sb.append(para.substring(toks.get(j).getStart(), toks.get(j).getEnd()));
-                    if(j < toks.size()) {
+            for(int j = start_ents; j <= end_ents && j < ents.size(); j++) {
+                sb.append(ents.get(j).beforeText());
+                List<Span> toks = partition(tokens, entspans[j]);
+                for(int k = 0; k < toks.size(); k++) {
+                    sb.append(para.substring(toks.get(k).getStart(), toks.get(k).getEnd()));
+                    if(k < toks.size()) {
                         sb.append(" ");
                     }
                 }
-                sb.append(ents.get(i).afterText());
+                sb.append(ents.get(j).afterText());
             }
             sb.append("\n");
             end_ents++;
