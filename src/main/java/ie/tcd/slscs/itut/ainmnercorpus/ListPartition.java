@@ -46,17 +46,6 @@ public class ListPartition {
                 current_entity = paragraph[j];
                 current_entity_span = entity_spans[j];
 
-                // Sentence can't end within an entity, so rewrite the span
-                if(current_entity_span.getEnd() > current_sentence.getEnd()
-                        && current_entity_span.getStart() < current_sentence.getEnd()) {
-                    if (i == sentences.length) {
-                        throw new Exception("More content expected");
-                    }
-                    i++;
-                    Span next_sentence = sentences[i];
-                    current_sentence = new Span(current_sentence.getStart(), next_sentence.getEnd());
-                }
-
                 sb.append(current_entity.beforeText());
                 for (int k = 0; k < tokens.length; k++) {
                     current_token = tokens[k];
@@ -78,30 +67,28 @@ public class ListPartition {
         }
         return part;
     }
-    private static List<Span> segment(Span[] sentences, EntityBase[] entities) throws Exception {
+    private static List<Span> adjust_sentences(Span[] sentences, EntityBase[] entities) throws Exception {
         List<Span> out = new ArrayList<>();
         Span[] entity_spans = entityToSpan(entities);
 
         for(int i = 0; i < sentences.length; i++) {
-            Span sent = sentences[i];
-            for(int j = 0; j < entities.length; j++) {
-                EntityBase ent = entities[j];
-                Span ent_span = entity_spans[j];
-                if(ent_span.getStart() >= sent.getStart() && ent_span.getEnd() <= sent.getEnd()) {
-                    out.add(ent_span);
-                } else if(ent_span.getStart() >= sent.getStart() && ent_span.getEnd() > sent.getEnd()) {
-                    if(!(ent instanceof SimpleEntity)) {
-                        out.add(new Span(ent_span.getStart(), sent.getEnd()));
-                        if(i < sentences.length - 1) {
+            Span current_sentence = sentences[i];
+            for(int j = 0; j < entity_spans.length; j++) {
+                Span current_entity_span = entity_spans[j];
+                if(current_entity_span.getEnd() > current_sentence.getEnd()
+                        && current_entity_span.getStart() < current_sentence.getEnd()) {
+                    // Sentence can't end within an entity, so rewrite the span
+                    if(entities[j] instanceof SimpleEntity) {
+                        if (i > sentences.length - 1) {
                             throw new Exception("More content expected");
                         }
-                        sent = sentences[i + 1];
                         i++;
-
-                        ent_span = new Span(sent.getStart(), ent_span.getEnd());
+                        Span next_sentence = sentences[i];
+                        current_sentence = new Span(current_sentence.getStart(), next_sentence.getEnd());
                     }
                 }
             }
+            out.add(current_sentence);
         }
         return out;
     }
