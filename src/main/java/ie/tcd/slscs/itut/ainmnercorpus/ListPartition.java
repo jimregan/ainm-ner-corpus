@@ -37,18 +37,17 @@ public class ListPartition {
         List<EntityBase> ents = split_entities(sentences, paragraph);
         Span entspans[] = entityToSpan(ents);
         int last_ent = ents.size();
+        int start_ents = 0;
+        int end_ents = 0;
         for(Span sent : split_sentences(sentences, paragraph)) {
-            int start_ents = 0;
-            int end_ents = 0;
-            for(int x = 0; x < ents.size(); x++) {
-                if(entspans[x].getStart() <= sent.getStart()) {
-                    start_ents++;
-                    end_ents++;
-                } else if(entspans[x].getStart() >= sent.getStart() && entspans[x].getEnd() <= sent.getEnd()) {
+            System.err.println("sent" + sentno);sentno++;
+            for(int x = start_ents; x < ents.size(); x++) {
+                if(entspans[x].getStart() >= sent.getStart() && entspans[x].getEnd() <= sent.getEnd() && x < ents.size()) {
                     end_ents++;
                 }
             }
-            for(int i = start_ents; i < end_ents; i++) {
+            System.err.println(start_ents + " " + end_ents);
+            for(int i = start_ents; i <= end_ents && i < ents.size(); i++) {
                 sb.append(ents.get(i).beforeText());
                 List<Span> toks = partition(tokens, entspans[i]);
                 for(int j = 0; j < toks.size(); j++) {
@@ -59,8 +58,10 @@ public class ListPartition {
                 }
                 sb.append(ents.get(i).afterText());
             }
+            sb.append("\n");
+            end_ents++;
+            start_ents = end_ents;
         }
-        sb.append("\n");
         return sb.toString();
     }
 
