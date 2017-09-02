@@ -39,20 +39,37 @@ public class ListPartition {
 
         int start_ents = 0;
         int end_ents = 0;
+        boolean sent_start = true;
 
         for(int i = 0; i < split_sents.size(); i++) {
             end_ents = getEnd(entspans, split_sents.get(i));
-            System.err.println("sent" + i + " " + start_ents + " " + end_ents);
+            sent_start = true;
+            System.err.println("I");
             for(int j = start_ents; j <= end_ents && j < ents.size(); j++) {
-                sb.append(ents.get(j).beforeText());
+                if(j > 0) {
+                    sent_start = false;
+                }
+                System.err.println("J");
+                String before = ents.get(j).beforeText();
+                if(!sent_start && !before.equals("")) {
+                    sb.append(' ');
+                }
+                sb.append(before);
                 List<Span> toks = partition(tokens, entspans[j]);
+                System.err.println("entsp" + entspans[j].getStart() + " " + entspans[j].getEnd());
                 for(int k = 0; k < toks.size(); k++) {
+                    System.err.println("K");
+                    System.err.println(para.substring(toks.get(k).getStart(), toks.get(k).getEnd()));
                     sb.append(para.substring(toks.get(k).getStart(), toks.get(k).getEnd()));
                     if(k < toks.size() - 1) {
                         sb.append(" ");
                     }
                 }
-                sb.append(ents.get(j).afterText());
+                String after = ents.get(j).afterText();
+                if(!after.equals("")) {
+                    sb.append(' ');
+                }
+                sb.append(after);
             }
             sb.append("\n");
             start_ents = end_ents + 1;
@@ -151,7 +168,7 @@ public class ListPartition {
             int item_length = paragraph.get(i).getText().length();
             int next_pos = current_pos + item_length;
             entity_spans[i] = new Span(current_pos, next_pos);
-            current_pos = next_pos;
+            current_pos = next_pos + 1;
         }
 
         return entity_spans;
