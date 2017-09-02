@@ -34,19 +34,18 @@ public class ListPartition {
 
         List<EntityBase> ents = split_entities(sentences, paragraph);
         Span entspans[] = entityToSpan(ents);
-        int offset = 0;
+        String para = getEntityBaseString(paragraph);
         for(Span sent : split_sentences(sentences, paragraph)) {
             for(int i = 0; i < ents.size(); i++) {
                 sb.append(ents.get(i).beforeText());
                 List<Span> toks = partition(tokens, entspans[i]);
                 for(int j = 0; j < toks.size(); j++) {
-                    sb.append(ents.get(i).getText().substring(toks.get(j).getStart() - offset, toks.get(j).getEnd() - offset));
+                    sb.append(para.substring(toks.get(j).getStart(), toks.get(j).getEnd()));
                     if(j < toks.size() - 1) {
                         sb.append(" ");
                     }
                 }
                 sb.append(ents.get(i).afterText());
-                offset += ents.get(i).getText().length();
             }
         }
         sb.append("\n");
