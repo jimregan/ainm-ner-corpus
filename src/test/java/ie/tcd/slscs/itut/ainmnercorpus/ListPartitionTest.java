@@ -75,6 +75,8 @@ public class ListPartitionTest {
         assertEquals("A piece of text.", out.get(0).getText());
         assertEquals("Or three.", out.get(2).getText());
         assertEquals("In ", out.get(3).getText());
+        assertEquals("Co. Cork", out.get(4).getText());
+        assertEquals(" of all places.", out.get(5).getText());
         assertEquals(6, out.size());
     }
 
@@ -86,6 +88,20 @@ public class ListPartitionTest {
         Span exp[] = new Span[]{new Span(0, 4), new Span(4, 14)};
         Span out[] = ListPartition.entityToSpan(arr);
         assertArrayEquals(exp, out);
+    }
+
+    @Test
+    public void entityToSpan2() throws Exception {
+        TextEntity txt = new TextEntity("A piece of text. With a sentence. Or three. In ");
+        SimpleEntity se1 = new SimpleEntity("Co. Cork", "place");
+        TextEntity txt2 = new TextEntity(" of all places.");
+        EntityBase ents[] = new EntityBase[]{txt, se1, txt2};
+        Span sents[] = new Span[]{new Span(0, 47), new Span(47, 55), new Span(55, 70)};
+        Span out[] = ListPartition.entityToSpan(ents);
+        assertArrayEquals(sents, out);
+        assertEquals(3, out.length);
+        assertEquals(0, out[0].getStart());
+        assertEquals(47, out[0].getEnd());
     }
 
     @Test

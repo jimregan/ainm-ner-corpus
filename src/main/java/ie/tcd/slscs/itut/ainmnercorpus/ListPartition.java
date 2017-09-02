@@ -35,6 +35,9 @@ public class ListPartition {
         String para = getEntityBaseString(paragraph);
         List<EntityBase> ents = split_entities(sentences, paragraph);
         Span entspans[] = entityToSpan(ents);
+        for (Span tmp : entspans) {
+            System.err.println(tmp.getStart() + " " + tmp.getEnd());
+        }
         List<Span> split_sents = split_sentences(sentences, paragraph);
 
         int start_ents = 0;
@@ -171,7 +174,7 @@ public class ListPartition {
             int item_length = paragraph.get(i).getText().length();
             int next_pos = current_pos + item_length;
             entity_spans[i] = new Span(current_pos, next_pos);
-            current_pos = next_pos + 1;
+            current_pos = next_pos;
         }
 
         return entity_spans;
