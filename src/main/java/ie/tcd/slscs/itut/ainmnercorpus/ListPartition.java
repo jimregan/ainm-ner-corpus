@@ -97,15 +97,12 @@ public class ListPartition {
         Span[] entity_spans = entityToSpan(entities);
         for(int i = 0; i < sentences.length; i++) {
             for(int j = 0; j < entity_spans.length; j++) {
-                if(entity_spans[j].getStart() >= sentences[i].getStart()
-                        && entity_spans[j].getEnd() <= sentences[i].getEnd()) {
+                if(entity_spans[j].getEnd() <= sentences[i].getEnd()) {
                     out.add(entity_spans[j]);
-                } else if(entity_spans[j].getStart() >= sentences[i].getStart()
-                        && entity_spans[j].getEnd() >= sentences[i].getEnd()) {
-                    if(entities[j] instanceof SimpleEntity) {
-                        throw new Exception("Shouldn't happen: call split_sentences first");
-                    } else {
-
+                } else {
+                    while(entity_spans[j].getEnd() > sentences[i].getEnd()) {
+                        out.add(new Span(sentences[i].getStart(), sentences[i].getEnd()));
+                        j++;
                     }
                 }
             }

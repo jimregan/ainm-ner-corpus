@@ -32,6 +32,13 @@ public class ListPartitionTest {
 
     @Test
     public void split_entities() throws Exception {
+        TextEntity txt = new TextEntity("A piece of text. With a sentence. Or three.");
+        TextEntity text[] = new TextEntity[]{txt};
+        Span sents[] = new Span[]{new Span(0, 16), new Span(17, 33), new Span(34, 43)};
+        List<Span> out = ListPartition.split_entities(sents, text);
+        assertEquals(0, out.get(0).getStart());
+        assertEquals(17, out.get(1).getStart());
+        assertEquals(3, out.size());
     }
 
     @Test
