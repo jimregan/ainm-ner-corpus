@@ -58,7 +58,7 @@ public class ListPartition {
         return sb.toString();
     }
 
-    private static List<Span> partition(Span[] tokens, Span entity) {
+    static List<Span> partition(Span[] tokens, Span entity) {
         List<Span> part = new ArrayList<>();
         for(Span span : tokens) {
             if(span.getStart() >= entity.getStart() && span.getEnd() <= entity.getEnd()) {
@@ -67,7 +67,7 @@ public class ListPartition {
         }
         return part;
     }
-    private static List<Span> adjust_sentences(Span[] sentences, EntityBase[] entities) throws Exception {
+    static List<Span> split_sentences(Span[] sentences, EntityBase[] entities) throws Exception {
         List<Span> out = new ArrayList<>();
         Span[] entity_spans = entityToSpan(entities);
 
@@ -92,14 +92,34 @@ public class ListPartition {
         }
         return out;
     }
+    static List<Span> split_entities(Span[] sentences, EntityBase[] entities) throws Exception {
+        List<Span> out = new ArrayList<>();
+        Span[] entity_spans = entityToSpan(entities);
+        for(int i = 0; i < sentences.length; i++) {
+            for(int j = 0; j < entity_spans.length; j++) {
+                if(entity_spans[j].getStart() >= sentences[i].getStart()
+                        && entity_spans[j].getEnd() <= sentences[i].getEnd()) {
+                    out.add(entity_spans[j]);
+                } else if(entity_spans[j].getStart() >= sentences[i].getStart()
+                        && entity_spans[j].getEnd() >= sentences[i].getEnd()) {
+                    if(entities[j] instanceof SimpleEntity) {
+                        throw new Exception("Shouldn't happen: call split_sentences first");
+                    } else {
 
-    private static Span[] entityToSpan(EntityBase[] paragraph) {
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    static Span[] entityToSpan(EntityBase[] paragraph) {
         Span entity_spans[] = new Span[paragraph.length];
 
         int current_pos = 0;
         for(int i = 0; i < paragraph.length; i++) {
             int item_length = paragraph[i].getText().length();
-            entity_spans[i] = new Span(current_pos, item_length);
+            entity_spans[i] = new Span(current_pos, current_pos + item_length);
             current_pos += item_length;
         }
 
