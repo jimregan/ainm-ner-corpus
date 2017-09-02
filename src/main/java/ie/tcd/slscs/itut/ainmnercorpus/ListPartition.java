@@ -41,7 +41,8 @@ public class ListPartition {
         int end_ents = 0;
 
         for(int i = 0; i < split_sents.size(); i++) {
-            Span sent = split_sents.get(i);
+            end_ents = getEnd(entspans, split_sents.get(i));
+            System.err.println("sent" + i + " " + start_ents + " " + end_ents);
             for(int j = start_ents; j <= end_ents && j < ents.size(); j++) {
                 sb.append(ents.get(j).beforeText());
                 List<Span> toks = partition(tokens, entspans[j]);
@@ -54,8 +55,7 @@ public class ListPartition {
                 sb.append(ents.get(j).afterText());
             }
             sb.append("\n");
-            end_ents++;
-            start_ents = end_ents;
+            start_ents = end_ents + 1;
         }
         return sb.toString();
     }
@@ -68,6 +68,15 @@ public class ListPartition {
             }
         }
         return part;
+    }
+    static int getEnd(Span[] sents, Span entity) {
+        int ret = sents.length - 1;
+        for(int i = ret; i > 0; i--) {
+            if(sents[i].getEnd() > entity.getEnd()) {
+                ret--;
+            }
+        }
+        return ret;
     }
     static List<Span> split_sentences(Span[] sentences, EntityBase[] entities) throws Exception {
         List<Span> out = new ArrayList<>();
