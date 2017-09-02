@@ -40,4 +40,14 @@ public class TextEntity implements EntityBase {
     public String toString() {
         return text;
     }
+
+    @Override
+    public String afterText() {
+        return "";
+    }
+
+    @Override
+    public String beforeText() {
+        return "";
+    }
 }

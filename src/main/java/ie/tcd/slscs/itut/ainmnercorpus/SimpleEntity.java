@@ -48,4 +48,14 @@ public class SimpleEntity implements EntityBase {
     public String toString() {
         return text;
     }
+
+    @Override
+    public String beforeText() {
+        return "<START:" + type + "> ";
+    }
+
+    @Override
+    public String afterText() {
+        return "<END> ";
+    }
 }

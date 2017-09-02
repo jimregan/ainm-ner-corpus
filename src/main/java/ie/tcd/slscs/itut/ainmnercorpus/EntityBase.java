@@ -24,4 +24,7 @@
 package ie.tcd.slscs.itut.ainmnercorpus;
 
 public interface EntityBase {
+    public String getText();
+    public String beforeText();
+    public String afterText();
 }
