@@ -42,19 +42,12 @@ public class ListPartition {
 
         for(int i = 0; i < split_sents.size(); i++) {
             Span sent = split_sents.get(i);
-            System.err.println("sent" + i);
-            for(int x = start_ents; x < ents.size(); x++) {
-                if(entspans[x].getStart() >= sent.getStart() && entspans[x].getEnd() <= sent.getEnd() && x < ents.size()) {
-                    end_ents++;
-                }
-            }
-            System.err.println(start_ents + " " + end_ents);
             for(int j = start_ents; j <= end_ents && j < ents.size(); j++) {
                 sb.append(ents.get(j).beforeText());
                 List<Span> toks = partition(tokens, entspans[j]);
                 for(int k = 0; k < toks.size(); k++) {
                     sb.append(para.substring(toks.get(k).getStart(), toks.get(k).getEnd()));
-                    if(k < toks.size()) {
+                    if(k < toks.size() - 1) {
                         sb.append(" ");
                     }
                 }
