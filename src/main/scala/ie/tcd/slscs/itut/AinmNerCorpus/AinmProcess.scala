@@ -121,6 +121,8 @@ object AinmProcess {
     case EntityReference(a, _) => a
     case _ => throw new Exception("Unknown object " + n.toString)
   }
+  def piecesToString(l: List[NERText]): String = l.map{pieceToString}.mkString("")
+  def splitParaSent(s: String): Array[Span] = sentdetect.sentPosDetect(s)
   def filterByType(n: NERText, nertype: String): NERText = n match {
     case TextPart(t) => TextPart(t)
     case EntityReference(a, b) => if(b == nertype) {
