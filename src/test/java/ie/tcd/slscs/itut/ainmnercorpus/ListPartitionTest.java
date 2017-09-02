@@ -35,10 +35,24 @@ public class ListPartitionTest {
         TextEntity txt = new TextEntity("A piece of text. With a sentence. Or three.");
         TextEntity text[] = new TextEntity[]{txt};
         Span sents[] = new Span[]{new Span(0, 16), new Span(17, 33), new Span(34, 43)};
-        List<Span> out = ListPartition.split_entities(sents, text);
-        assertEquals(0, out.get(0).getStart());
-        assertEquals(17, out.get(1).getStart());
+        List<EntityBase> out = ListPartition.split_entities(sents, text);
         assertEquals(3, out.size());
+        assertEquals("A piece of text.", out.get(0).getText());
+        assertEquals("Or three.", out.get(2).getText());
+    }
+
+    @Test
+    public void split_entities2() throws Exception {
+        TextEntity txt = new TextEntity("A piece of text. With a sentence. Or three. In ");
+        SimpleEntity se1 = new SimpleEntity("Co. Cork", "place");
+        TextEntity txt2 = new TextEntity(" of all places.");
+        EntityBase ents[] = new EntityBase[]{txt, se1, txt2};
+        Span sents[] = new Span[]{new Span(0, 16), new Span(17, 33), new Span(34, 43), new Span(44, 70)};
+        List<EntityBase> out = ListPartition.split_entities(sents, ents);
+        assertEquals("A piece of text.", out.get(0).getText());
+        assertEquals("Or three.", out.get(2).getText());
+        assertEquals("In ", out.get(3).getText());
+        assertEquals(6, out.size());
     }
 
     @Test

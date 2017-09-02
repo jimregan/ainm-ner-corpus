@@ -92,17 +92,23 @@ public class ListPartition {
         }
         return out;
     }
-    static List<Span> split_entities(Span[] sentences, EntityBase[] entities) throws Exception {
-        List<Span> out = new ArrayList<>();
+    static List<EntityBase> split_entities(Span[] sentences, EntityBase[] entities) throws Exception {
+        List<EntityBase> out = new ArrayList<>();
         Span[] entity_spans = entityToSpan(entities);
         for(int i = 0; i < sentences.length; i++) {
             for(int j = 0; j < entity_spans.length; j++) {
-                if(entity_spans[j].getEnd() <= sentences[i].getEnd()) {
-                    out.add(entity_spans[j]);
+                if(i < sentences.length && sentences[i].getEnd() >= entity_spans[j].getEnd()) {
+                    out.add(entities[j]);
                 } else {
-                    while(entity_spans[j].getEnd() > sentences[i].getEnd()) {
-                        out.add(new Span(sentences[i].getStart(), sentences[i].getEnd()));
-                        j++;
+                    while(i < sentences.length && entity_spans[j].getEnd() >= sentences[i].getEnd()) {
+                        if(!(entities[j] instanceof TextEntity)) {
+                            throw new Exception("Unexpected entity: use split_sentences first");
+                        }
+                        out.add(new TextEntity(entities[j].getText().substring(sentences[i].getStart(), sentences[i].getEnd())));
+                        i++;
+                    }
+                    if(i < sentences.length && entity_spans[j].getEnd() <= sentences[i].getEnd()) {
+                        out.add(new TextEntity(entities[j].getText().substring(sentences[i].getStart(), entity_spans[j].getEnd())));
                     }
                 }
             }
