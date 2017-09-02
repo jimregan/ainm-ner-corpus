@@ -25,6 +25,9 @@ package ie.tcd.slscs.itut.ainmnercorpus;
 
 import opennlp.tools.util.Span;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ListPartition {
     public static String makeText(EntityBase[] paragraph, Span[] sentences, Span[] tokens) throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -64,6 +67,43 @@ public class ListPartition {
             sb.append('\n');
         }
         return sb.toString();
+    }
+
+    private static List<Span> partition(Span[] tokens, Span entity) {
+        List<Span> part = new ArrayList<>();
+        for(Span span : tokens) {
+            if(span.getStart() >= entity.getStart() && span.getEnd() <= entity.getEnd()) {
+                part.add(span);
+            }
+        }
+        return part;
+    }
+    private static List<Span> segment(Span[] sentences, EntityBase[] entities) throws Exception {
+        List<Span> out = new ArrayList<>();
+        Span[] entity_spans = entityToSpan(entities);
+
+        for(int i = 0; i < sentences.length; i++) {
+            Span sent = sentences[i];
+            for(int j = 0; j < entities.length; j++) {
+                EntityBase ent = entities[j];
+                Span ent_span = entity_spans[j];
+                if(ent_span.getStart() >= sent.getStart() && ent_span.getEnd() <= sent.getEnd()) {
+                    out.add(ent_span);
+                } else if(ent_span.getStart() >= sent.getStart() && ent_span.getEnd() > sent.getEnd()) {
+                    if(!(ent instanceof SimpleEntity)) {
+                        out.add(new Span(ent_span.getStart(), sent.getEnd()));
+                        if(i < sentences.length - 1) {
+                            throw new Exception("More content expected");
+                        }
+                        sent = sentences[i + 1];
+                        i++;
+
+                        ent_span = new Span(sent.getStart(), ent_span.getEnd());
+                    }
+                }
+            }
+        }
+        return out;
     }
 
     private static Span[] entityToSpan(EntityBase[] paragraph) {
