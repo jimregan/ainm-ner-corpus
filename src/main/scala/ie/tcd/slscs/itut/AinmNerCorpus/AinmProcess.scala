@@ -25,13 +25,13 @@ package ie.tcd.slscs.itut.AinmNerCorpus
 
 import scala.xml._
 import scala.io.Source
-import java.io.FileInputStream; 
-import java.io.InputStream; 
-import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.tokenize.TokenizerME; 
-import opennlp.tools.tokenize.TokenizerModel; 
-import opennlp.tools.util.Span; 
+import java.io.FileInputStream
+import java.io.InputStream
+import opennlp.tools.sentdetect.SentenceDetectorME
+import opennlp.tools.sentdetect.SentenceModel
+import opennlp.tools.tokenize.TokenizerME
+import opennlp.tools.tokenize.TokenizerModel
+import opennlp.tools.util.Span
 
 object AinmProcess {
   import scala.xml.XML
@@ -98,6 +98,17 @@ object AinmProcess {
     case Party(bf, t) => EntityReference(t, "organization")
     case PlaceName(id, bf, t, _, _) => EntityReference(t, "location")
     case EduInst(id, bf, t) => EntityReference(t, "location")
+  }
+  def simplifyTextPieces(pieces: List[NERText]): List[NERText] = {
+    def simplifyInner(pieces: List[NERText], acc: List[NERText]): List[NERText] = pieces match {
+      case EntityReference(a, b) :: xs => simplifyInner(xs, acc :+ EntityReference(a,b))
+      case TextPart(t) :: xs => xs match {
+        case TextPart(tt) :: xx => simplifyInner(xx :+ TextPart(t + tt), acc)
+        case EntityReference(a, b) :: xx => simplifyInner(xx, acc ++ List(TextPart(t), EntityReference(a, b)))
+      }
+      case Nil => acc
+    }
+    simplifyInner(pieces, List.empty[NERText])
   }
 }
 
