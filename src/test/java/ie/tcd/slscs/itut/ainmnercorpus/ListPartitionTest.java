@@ -10,6 +10,14 @@ import static org.junit.Assert.*;
 public class ListPartitionTest {
     @Test
     public void partition() throws Exception {
+        Span sents[] = new Span[]{new Span(0, 16), new Span(17, 33), new Span(34, 43), new Span(44, 70)};
+        Span filt = new Span(17, 43);
+        List<Span> out = ListPartition.partition(sents, filt);
+        assertEquals(2, out.size());
+        assertEquals(17, out.get(0).getStart());
+        assertEquals(33, out.get(0).getEnd());
+        assertEquals(34, out.get(1).getStart());
+        assertEquals(43, out.get(1).getEnd());
     }
 
     @Test
