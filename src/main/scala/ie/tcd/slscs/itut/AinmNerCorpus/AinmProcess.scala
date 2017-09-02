@@ -25,13 +25,14 @@ package ie.tcd.slscs.itut.AinmNerCorpus
 
 import scala.xml._
 import scala.io.Source
-import java.io.FileInputStream; 
-import java.io.InputStream; 
-import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.tokenize.TokenizerME; 
-import opennlp.tools.tokenize.TokenizerModel; 
-import opennlp.tools.util.Span; 
+import java.io.FileInputStream
+import java.io.InputStream
+import opennlp.tools.sentdetect.SentenceDetectorME
+import opennlp.tools.sentdetect.SentenceModel
+import opennlp.tools.tokenize.TokenizerME
+import opennlp.tools.tokenize.TokenizerModel
+import opennlp.tools.util.Span
+import ie.tcd.slscs.itut.AinmNerCorpus._
 
 object AinmProcess {
   import scala.xml.XML
@@ -62,10 +63,25 @@ object AinmProcess {
     spaninner(0, s, List[(Int, Int)]())
   }
 
+  /**
+   * Load xml files, taken from ainm.ie
+   * These were grabbed with wget -x so the filenames represent the original
+   * URIs: www.ainm.ie/Bio.aspx?ID={id}&xml=true
+   */
   def getFileList(dir: String): List[File] = {
     import ie.tcd.slscs.itut.gramadanj.FileUtils
     val files = FileUtils.getFileListStartsAndEndsWith(dir, "Bio", "xml=true")
     files.toList
+  }
+
+  /**
+   * Get the paragraphs from a single file
+   */
+  def readFile(f: File): List[Paragraph] = {
+    import scala.xml.XML
+    import scala.xml.Source
+    val xml = XML.load(Source.fromFile(f))
+    TEIReader.readParagraphs(xml)
   }
 
   abstract class NERText {
@@ -87,7 +103,7 @@ object AinmProcess {
    * periodicals are treated as organisations, rather than as an "opus",
    * while books, dramas, etc. are just treated as text.
    */
-  def ainmTextPieceToNER(l: List[TextPiece]): List[NERText] = l match {
+  def ainmTextPieceToNER(txt: TextPiece): NERText = txt match {
     case PersonMention(id, bf, t) => EntityReference(t, "person")
     case Conradh(kind, bf, t) => EntityReference(t, "organization")
     case Opus("newspaper", bf, t) => EntityReference(t, "organization")
@@ -95,10 +111,45 @@ object AinmProcess {
     case Opus("book", bf, t) => TextPart(t)
     case Opus(_, bf, t) => TextPart(t)
     case RawText(t) => TextPart(t)
+    case Anchor(t, _) => TextPart(t)
     case Party(bf, t) => EntityReference(t, "organization")
     case PlaceName(id, bf, t, _, _) => EntityReference(t, "location")
     case EduInst(id, bf, t) => EntityReference(t, "location")
   }
+
+  /**
+   * Filters the NER pieces to only the desired type; OpenNLP (and most other
+   * NER systems) generally uses separate models per type.
+   */
+  def filterNERType(kind: String, l: List[NERText]): List[NERText] = {
+    def filterinner(n: NERText, kind: String): NERText = n match {
+      case EntityReference(t, k) => {
+        if(k == kind) {
+          EntityReference(t, k)
+        } else {
+          TextPart(t)
+        }
+      }
+      case TextPart(t) => TextPart(t)
+    }
+    l.map{e => filterinner(e, kind)}
+  }
+
+  def splitParagraph(p: Paragraph): Array[Span] = sentdetect.sentPosDetect(p.getText)
+  def splitParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{splitParagraph}
+  def tokeniseParagraph(p: Paragraph): Array[Span] = tokdetect.tokenizePos(p.getText)
+  def tokeniseParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{tokeniseParagraph}
+}
+
+object OpenNLPConverter extends App {
+/*
+  val dir = args(0)
+  if(dir == null || dir == "") {
+    throw new Exception("Specify the directory containing the ainm corpus")
+  }*/
+  val dir = "/home/jim/www.ainm.ie/"
+  val files = AinmProcess.getFileList(dir)
+  val docs = files.map{AinmProcess.readFile}
 }
 
 // set tabstop=2
