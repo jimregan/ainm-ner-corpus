@@ -102,6 +102,8 @@ public class ListPartitionTest {
         assertEquals(3, out.length);
         assertEquals(0, out[0].getStart());
         assertEquals(47, out[0].getEnd());
+        assertEquals(55, out[2].getStart());
+        assertEquals(70, out[2].getEnd());
     }
 
     @Test
