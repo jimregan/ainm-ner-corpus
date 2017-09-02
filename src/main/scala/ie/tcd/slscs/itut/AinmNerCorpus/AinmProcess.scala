@@ -23,9 +23,6 @@
  */
 package ie.tcd.slscs.itut.AinmNerCorpus
 
-import scala.xml._
-import scala.io.Source
-import java.io.FileInputStream
 import java.io.InputStream
 import opennlp.tools.sentdetect.SentenceDetectorME
 import opennlp.tools.sentdetect.SentenceModel
@@ -103,12 +100,21 @@ object AinmProcess {
     def simplifyInner(pieces: List[NERText], acc: List[NERText]): List[NERText] = pieces match {
       case EntityReference(a, b) :: xs => simplifyInner(xs, acc :+ EntityReference(a,b))
       case TextPart(t) :: xs => xs match {
+        case Nil => acc :+ TextPart(t)
         case TextPart(tt) :: xx => simplifyInner(xx :+ TextPart(t + tt), acc)
         case EntityReference(a, b) :: xx => simplifyInner(xx, acc ++ List(TextPart(t), EntityReference(a, b)))
       }
       case Nil => acc
     }
     simplifyInner(pieces, List.empty[NERText])
+  }
+  def piecesFromFile(f: File): List[List[NERText]] = {
+    val xmltext = XML.loadFile(f)
+    val rawparas = TEIReader.readParagraphs(xmltext)
+    rawparas.map{e => simplifyTextPieces(e.children.map{ainmTextPieceToNER})}
+  }
+  def piecesFromFile(s: String): List[List[NERText]] = {
+    piecesFromFile(new File(s))
   }
 }
 
