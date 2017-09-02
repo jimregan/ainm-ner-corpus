@@ -32,16 +32,18 @@ public class ListPartition {
     public static String makeText(EntityBase[] paragraph, Span[] sentences, Span[] tokens) throws Exception {
         StringBuilder sb = new StringBuilder();
 
-        List<EntityBase> ents = split_entities(sentences, paragraph);
-        Span entspans[] = entityToSpan(ents);
         String para = getEntityBaseString(paragraph);
         for(Span sent : split_sentences(sentences, paragraph)) {
+            List<EntityBase> ents = split_entities(sentences, paragraph);
+            Span entspans[] = entityToSpan(ents);
             for(int i = 0; i < ents.size(); i++) {
                 sb.append(ents.get(i).beforeText());
                 List<Span> toks = partition(tokens, entspans[i]);
+                System.err.println("entspans: " + para.substring(entspans[i].getStart(), entspans[i].getEnd()));
                 for(int j = 0; j < toks.size(); j++) {
                     sb.append(para.substring(toks.get(j).getStart(), toks.get(j).getEnd()));
-                    if(j < toks.size() - 1) {
+                    System.err.println(sb.toString() + j);
+                    if(j < toks.size()) {
                         sb.append(" ");
                     }
                 }
