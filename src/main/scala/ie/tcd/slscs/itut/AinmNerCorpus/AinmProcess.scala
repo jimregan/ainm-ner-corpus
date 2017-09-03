@@ -24,6 +24,8 @@
 package ie.tcd.slscs.itut.AinmNerCorpus
 
 import java.io.InputStream
+
+import ie.tcd.slscs.itut.ainmnercorpus.{EntityBase, SimpleEntity, TextEntity}
 import opennlp.tools.sentdetect.SentenceDetectorME
 import opennlp.tools.sentdetect.SentenceModel
 import opennlp.tools.tokenize.TokenizerME
@@ -138,7 +140,6 @@ object AinmProcess {
     case _ => throw new Exception("Unknown object " + n.toString)
   }
   def piecesToString(l: List[NERText]): String = l.map{pieceToString}.mkString("")
-  def splitParaSent(s: String): Array[Span] = sentdetect.sentPosDetect(s)
 
   /**
    * Filters the NER pieces to only the desired type; OpenNLP (and most other
@@ -157,11 +158,16 @@ object AinmProcess {
     }
     l.map{e => filterinner(e, kind)}
   }
+  implicit def convertNERTypeToJava(n: NERText): EntityBase = n match {
+    case EntityReference(t, k) => new SimpleEntity(t, k)
+    case TextPart(t) => new TextEntity(t)
+    case _ => throw new Exception("Unknown object " + n.toString)
+  }
 
   def splitParagraph(p: Paragraph): Array[Span] = sentdetect.sentPosDetect(p.getText)
-  def splitParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{splitParagraph}
+  def splitParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{splitParagraph}.toArray
   def tokeniseParagraph(p: Paragraph): Array[Span] = tokdetect.tokenizePos(p.getText)
-  def tokeniseParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{tokeniseParagraph}
+  def tokeniseParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{tokeniseParagraph}.toArray
 }
 
 object OpenNLPConverter extends App {
