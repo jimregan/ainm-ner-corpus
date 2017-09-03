@@ -25,7 +25,7 @@ package ie.tcd.slscs.itut.AinmNerCorpus
 
 import java.io.InputStream
 
-import ie.tcd.slscs.itut.ainmnercorpus.{EntityBase, SimpleEntity, TextEntity}
+import ie.tcd.slscs.itut.ainmnercorpus.{EntityBase, ListPartition, SimpleEntity, TextEntity}
 import opennlp.tools.sentdetect.SentenceDetectorME
 import opennlp.tools.sentdetect.SentenceModel
 import opennlp.tools.tokenize.TokenizerME
@@ -126,19 +126,19 @@ object AinmProcess {
     }
     simplifyInner(pieces, List.empty[NERText])
   }
+  def filterNERParagraph(p: Paragraph, filt: String): List[NERText] = {
+    if(filt != null && filt != "") {
+      filterNERType(filt, p.children.map{ainmTextPieceToNER})
+    } else {
+      p.children.map{ainmTextPieceToNER}
+    }
+  }
   def piecesFromFile(f: File, filter: String): List[List[NERText]] = {
     val xmltext = XML.loadFile(f)
     val rawparas = TEIReader.readParagraphs(xmltext)
-    def filterInner(l: List[TextPiece], filt: String): List[NERText] = {
-      if(filt != null && filt != "") {
-        filterNERType(filt, l.map{ainmTextPieceToNER})
-      } else {
-        l.map{ainmTextPieceToNER}
-      }
-    }
-    rawparas.map{e => simplifyTextPieces(filterInner(e.children, filter))}
+    rawparas.map{e => simplifyTextPieces(filterNERParagraph(e, filter))}
   }
-  def piecesFromFile(s: String, filter: String): List[List[NERText]] = {
+  def piecesFromFilePath(s: String, filter: String): List[List[NERText]] = {
     piecesFromFile(new File(s), filter)
   }
   def pieceToString(n: NERText): String = n match {
@@ -175,6 +175,12 @@ object AinmProcess {
   def splitParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{splitParagraph}.toArray
   def tokeniseParagraph(p: Paragraph): Array[Span] = tokdetect.tokenizePos(p.getText)
   def tokeniseParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{tokeniseParagraph}.toArray
+  def processParagaph(p: Paragraph, filter: String): String = {
+    val sentences = splitParagraph(p)
+    val tokens = tokeniseParagraph(p)
+    val ner = filterNERParagraph(p, filter).toArray.map{convertNERTypeToJava}
+    ListPartition.makeText(ner, sentences, tokens)
+  }
 }
 
 object OpenNLPConverter extends App {
