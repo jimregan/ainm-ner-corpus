@@ -210,7 +210,7 @@ and filter is the NER type: person, organization, or location""")
   val mydir = "/home/jim/www.ainm.ie/"
   val files = AinmProcess.getFileList(dir)
   val docs: List[List[Paragraph]] = files.map{AinmProcess.readFile}
-
+  val strings = docs.map{e => AinmProcess.processParagraphs(e, filter).mkString("\n")}.mkString("\n").replaceAll("\n+", "\n")
 }
 
 // set tabstop=2
