@@ -126,13 +126,20 @@ object AinmProcess {
     }
     simplifyInner(pieces, List.empty[NERText])
   }
-  def piecesFromFile(f: File): List[List[NERText]] = {
+  def piecesFromFile(f: File, filter: String): List[List[NERText]] = {
     val xmltext = XML.loadFile(f)
     val rawparas = TEIReader.readParagraphs(xmltext)
-    rawparas.map{e => simplifyTextPieces(e.children.map{ainmTextPieceToNER})}
+    def filterInner(l: List[TextPiece], filt: String): List[NERText] = {
+      if(filt != null && filt != "") {
+        filterNERType(filt, l.map{ainmTextPieceToNER})
+      } else {
+        l.map{ainmTextPieceToNER}
+      }
+    }
+    rawparas.map{e => simplifyTextPieces(filterInner(e.children, filter))}
   }
-  def piecesFromFile(s: String): List[List[NERText]] = {
-    piecesFromFile(new File(s))
+  def piecesFromFile(s: String, filter: String): List[List[NERText]] = {
+    piecesFromFile(new File(s), filter)
   }
   def pieceToString(n: NERText): String = n match {
     case TextPart(t) => t
