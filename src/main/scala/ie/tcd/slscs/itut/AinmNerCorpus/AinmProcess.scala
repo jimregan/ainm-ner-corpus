@@ -197,6 +197,12 @@ and filter is the NER type: person, organization, or location""")
     case "" =>
     case _ => throw new Exception("Filter can only be person, organization, or location")
   }
+  val outputname = filter match {
+    case "person" => "person-ner.txt"
+    case "organization" => "org-ner.txt"
+    case "location" => "loc-ner.txt"
+    case "" => "all-ner.txt"
+  }
   val directory = new File(dir)
   if(dir == null || dir == "" || !directory.exists || !directory.isDirectory) {
     throw new Exception("Specify the directory containing the ainm corpus")
