@@ -35,9 +35,6 @@ public class ListPartition {
         String para = getEntityBaseString(paragraph);
         List<EntityBase> ents = split_entities(sentences, paragraph);
         Span entspans[] = entityToSpanAdjusted(ents, para);
-        for (Span tmp : entspans) {
-            System.err.println(tmp.getStart() + " " + tmp.getEnd());
-        }
         List<Span> split_sents = split_sentences(sentences, paragraph);
 
         int start_ents = 0;
@@ -50,22 +47,17 @@ public class ListPartition {
                 end_ents = entspans.length - 1;
             }
             sent_start = true;
-            System.err.println("I: " + para.substring(split_sents.get(i).getStart(), split_sents.get(i).getEnd()));
             for(int j = start_ents; j <= end_ents && j < ents.size(); j++) {
                 if(j > 0) {
                     sent_start = false;
                 }
-                System.err.println("J " + start_ents + " " + end_ents);
                 String before = ents.get(j).beforeText();
                 if(!sent_start && !before.equals("")) {
                     sb.append(' ');
                 }
                 sb.append(before);
                 List<Span> toks = partition(tokens, entspans[j]);
-                System.err.println("entsp" + entspans[j].getStart() + " " + entspans[j].getEnd());
                 for(int k = 0; k < toks.size(); k++) {
-                    System.err.println("K");
-                    System.err.println(para.substring(toks.get(k).getStart(), toks.get(k).getEnd()));
                     sb.append(para.substring(toks.get(k).getStart(), toks.get(k).getEnd()));
                     if(k < toks.size() - 1) {
                         sb.append(" ");
@@ -161,25 +153,14 @@ public class ListPartition {
             Span curspan = entspans[i];
             if(curstr.equals(concat.substring(curspan.getStart(), curspan.getEnd()))) {
                 out[i] = new Span(curspan.getStart(), curspan.getEnd());
-                System.err.println("ok" + curstr);
             } else {
-                if(adjust != 0 && curspan.getEnd() + adjust < concat.length() - 1
-                    && curstr.equals(concat.substring(curspan.getStart(), curspan.getEnd()))) {
-                        out[i] = new Span(curspan.getStart(), curspan.getEnd());
-                    System.err.println("off 1" + curstr);
+                if(concat.charAt(curspan.getStart() + adjust + 1) == curstr.charAt(0)) {
+                    adjust += 1;
                 }
-                if (((curspan.getEnd() + adjust) < concat.length() - 1)
-                        && Character.isWhitespace(concat.charAt(curspan.getStart() + adjust))
-                        && curstr.equals(concat.substring(curspan.getStart() + adjust, curspan.getEnd() + adjust))) {
-                    adjust++;
-                    System.err.println("off 2" + curstr);
-                } else if (curspan.getEnd() >= concat.length() - 1) {
-                    adjust = concat.length() - curspan.getEnd() - 1;
-                } else if (((curspan.getEnd() + adjust) < (concat.length() - 1)) && curstr.equals(concat.substring(curspan.getStart() + adjust, curspan.getEnd() + adjust))) {
+                if(curstr.equals(concat.substring(curspan.getStart() + adjust, curspan.getEnd() + adjust))) {
                     out[i] = new Span(curspan.getStart() + adjust, curspan.getEnd() + adjust);
-                    System.err.println("off 1" + curstr);
                 } else {
-                    throw new Exception("Can't find " + curstr + " in " + concat);
+                    throw new Exception("Can't find " + curstr + " in " + concat + ":" + concat.indexOf(curstr) + " " + curspan.getStart() + " " + adjust);
                 }
             }
         }
