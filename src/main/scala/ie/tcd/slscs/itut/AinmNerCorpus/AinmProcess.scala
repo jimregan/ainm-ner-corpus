@@ -208,6 +208,7 @@ and filter is the NER type: person, organization, or location""")
     case "person" => "person-ner.txt"
     case "organization" => "org-ner.txt"
     case "location" => "loc-ner.txt"
+    case "text" => "ner-plain.txt"
     case "" => "all-ner.txt"
   }
   val directory = new File(dir)
