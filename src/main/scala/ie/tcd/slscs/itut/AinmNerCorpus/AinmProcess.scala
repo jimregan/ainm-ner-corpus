@@ -186,13 +186,13 @@ object AinmProcess {
 }
 
 object OpenNLPConverter extends App {
-  if(args.size != 1 || args.size != 2) {
+  if(args.length < 1 || args.length > 2) {
     throw new Exception(s"""Usage: OpenNLPConverter directory [filter]
 Where directory is a directory containing the downloaded XML
 and filter is the NER type: person, organization, or location""")
   }
   val dir = args(0)
-  val filter = if(args.size == 2) args(1) else ""
+  val filter = if(args.length == 2) args(1) else ""
   filter match {
     case "person" | "organization" | "location" =>
     case "" =>
