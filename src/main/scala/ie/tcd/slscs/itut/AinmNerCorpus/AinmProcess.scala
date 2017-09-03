@@ -23,7 +23,7 @@
  */
 package ie.tcd.slscs.itut.AinmNerCorpus
 
-import java.io.InputStream
+import java.io.{File, InputStream}
 
 import ie.tcd.slscs.itut.ainmnercorpus.{EntityBase, ListPartition, SimpleEntity, TextEntity}
 import opennlp.tools.sentdetect.SentenceDetectorME
@@ -181,15 +181,27 @@ object AinmProcess {
     val ner = filterNERParagraph(p, filter).toArray.map{convertNERTypeToJava}
     ListPartition.makeText(ner, sentences, tokens)
   }
+  def processParagraphs(l: List[Paragraph], filter: String): List[String] = l.map{e => processParagaph(e, filter)}
 }
 
 object OpenNLPConverter extends App {
-/*
+  if(args.size != 1 || args.size != 2) {
+    throw new Exception(s"""Usage: OpenNLPConverter directory [filter]
+Where directory is a directory containing the downloaded XML
+and filter is the NER type: person, organization, or location""")
+  }
   val dir = args(0)
-  if(dir == null || dir == "") {
+  val filter = if(args.size == 2) args(1) else ""
+  filter match {
+    case "person" | "organization" | "location" =>
+    case "" =>
+    case _ => throw new Exception("Filter can only be person, organization, or location")
+  }
+  val directory = new File(dir)
+  if(dir == null || dir == "" || !directory.exists || !directory.isDirectory) {
     throw new Exception("Specify the directory containing the ainm corpus")
-  }*/
-  val dir = "/home/jim/www.ainm.ie/"
+  }
+  val mydir = "/home/jim/www.ainm.ie/"
   val files = AinmProcess.getFileList(dir)
   val docs = files.map{AinmProcess.readFile}
 }
