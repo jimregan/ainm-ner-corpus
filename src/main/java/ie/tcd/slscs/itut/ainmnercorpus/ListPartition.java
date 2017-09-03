@@ -34,7 +34,7 @@ public class ListPartition {
 
         String para = getEntityBaseString(paragraph);
         List<EntityBase> ents = split_entities(sentences, paragraph);
-        Span entspans[] = entityToSpan(ents);
+        Span entspans[] = entityToSpanAdjusted(ents, para);
         for (Span tmp : entspans) {
             System.err.println(tmp.getStart() + " " + tmp.getEnd());
         }
@@ -147,6 +147,39 @@ public class ListPartition {
                     if(i < sentences.length && entity_spans[j].getEnd() <= sentences[i].getEnd()) {
                         out.add(new TextEntity(entities[j].getText().substring(sentences[i].getStart(), entity_spans[j].getEnd())));
                     }
+                }
+            }
+        }
+        return out;
+    }
+    static Span[] entityToSpanAdjusted(List<EntityBase> paragraph, String concat) throws Exception {
+        Span out[] = new Span[paragraph.size()];
+        Span entspans[] = entityToSpan(paragraph);
+        int adjust = 0;
+        for(int i = 0; i < entspans.length; i++) {
+            String curstr = paragraph.get(i).getText();
+            Span curspan = entspans[i];
+            if(curstr.equals(concat.substring(curspan.getStart(), curspan.getEnd()))) {
+                out[i] = new Span(curspan.getStart(), curspan.getEnd());
+                System.err.println("ok" + curstr);
+            } else {
+                if(adjust != 0 && curspan.getEnd() + adjust < concat.length() - 1
+                    && curstr.equals(concat.substring(curspan.getStart(), curspan.getEnd()))) {
+                        out[i] = new Span(curspan.getStart(), curspan.getEnd());
+                    System.err.println("off 1" + curstr);
+                }
+                if (((curspan.getEnd() + adjust) < concat.length() - 1)
+                        && Character.isWhitespace(concat.charAt(curspan.getStart() + adjust))
+                        && curstr.equals(concat.substring(curspan.getStart() + adjust, curspan.getEnd() + adjust))) {
+                    adjust++;
+                    System.err.println("off 2" + curstr);
+                } else if (curspan.getEnd() >= concat.length() - 1) {
+                    adjust = concat.length() - curspan.getEnd() - 1;
+                } else if (((curspan.getEnd() + adjust) < (concat.length() - 1)) && curstr.equals(concat.substring(curspan.getStart() + adjust, curspan.getEnd() + adjust))) {
+                    out[i] = new Span(curspan.getStart() + adjust, curspan.getEnd() + adjust);
+                    System.err.println("off 1" + curstr);
+                } else {
+                    throw new Exception("Can't find " + curstr + " in " + concat);
                 }
             }
         }
