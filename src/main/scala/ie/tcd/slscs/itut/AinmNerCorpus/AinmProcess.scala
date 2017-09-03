@@ -200,7 +200,7 @@ and filter is the NER type: person, organization, or location""")
   val dir = args(0)
   val filter = if(args.length == 2) args(1) else ""
   filter match {
-    case "person" | "organization" | "location" =>
+    case "person" | "organization" | "location" | "text" =>
     case "" =>
     case _ => throw new Exception("Filter can only be person, organization, or location")
   }
@@ -214,7 +214,6 @@ and filter is the NER type: person, organization, or location""")
   if(dir == null || dir == "" || !directory.exists || !directory.isDirectory) {
     throw new Exception("Specify the directory containing the ainm corpus")
   }
-  val mydir = "/home/jim/www.ainm.ie/"
   val files = AinmProcess.getFileList(dir)
   val docs: List[List[Paragraph]] = files.map{AinmProcess.readFile}
   val strings = docs.map{e => AinmProcess.processParagraphs(e, filter).mkString("\n")}.mkString("\n").replaceAll("\n+", "\n")
