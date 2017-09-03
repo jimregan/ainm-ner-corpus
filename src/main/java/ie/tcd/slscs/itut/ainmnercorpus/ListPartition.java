@@ -160,7 +160,7 @@ public class ListPartition {
                 if(curstr.equals(concat.substring(curspan.getStart() + adjust, curspan.getEnd() + adjust))) {
                     out[i] = new Span(curspan.getStart() + adjust, curspan.getEnd() + adjust);
                 } else {
-                    throw new Exception("Can't find " + curstr + " in " + concat + ":" + concat.indexOf(curstr) + " " + curspan.getStart() + " " + adjust);
+                    throw new Exception("Can't find " + curstr + " in " + concat);
                 }
             }
         }
