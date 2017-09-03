@@ -124,7 +124,6 @@ object AinmProcess {
         case EntityReference(a, b) :: xx => simplifyInner(xx, acc ++ List(TextPart(t), EntityReference(a, b)))
       }
       case Nil => acc
-      case _ => throw new Exception("Unexpected object: " + pieces.toString)
     }
     simplifyInner(pieces, List.empty[NERText])
   }
@@ -167,21 +166,13 @@ object AinmProcess {
     }
     l.map{e => filterinner(e, kind)}
   }
-  implicit def convertNERTypeToJava(n: NERText): EntityBase = n match {
-    case EntityReference(t, k) => new SimpleEntity(t, k)
-    case TextPart(t) => new TextEntity(t)
-    case _ => throw new Exception("Unknown object " + n.toString)
-  }
 
   def splitParagraph(p: Paragraph): Array[Span] = sentdetect.sentPosDetect(p.getText)
   def splitParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{splitParagraph}.toArray
   def tokeniseParagraph(p: Paragraph): Array[Span] = tokdetect.tokenizePos(p.getText)
   def tokeniseParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{tokeniseParagraph}.toArray
   def processParagaph(p: Paragraph, filter: String): String = {
-    val sentences = splitParagraph(p)
-    val tokens = tokeniseParagraph(p)
-    val ner = simplifyTextPieces(filterNERParagraph(p, filter)).toArray.map{convertNERTypeToJava}
-    ListPartition.makeText(ner, sentences, tokens)
+    ""
   }
   def processParagraphs(l: List[Paragraph], filter: String): List[String] = l.map{e => processParagaph(e, filter)}
 }
