@@ -179,7 +179,7 @@ object AinmProcess {
   def processParagaph(p: Paragraph, filter: String): String = {
     val sentences = splitParagraph(p)
     val tokens = tokeniseParagraph(p)
-    val ner = filterNERParagraph(p, filter).toArray.map{convertNERTypeToJava}
+    val ner = simplifyTextPieces(filterNERParagraph(p, filter)).toArray.map{convertNERTypeToJava}
     ListPartition.makeText(ner, sentences, tokens)
   }
   def processParagraphs(l: List[Paragraph], filter: String): List[String] = l.map{e => processParagaph(e, filter)}
