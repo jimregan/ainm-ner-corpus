@@ -124,6 +124,7 @@ object AinmProcess {
         case EntityReference(a, b) :: xx => simplifyInner(xx, acc ++ List(TextPart(t), EntityReference(a, b)))
       }
       case Nil => acc
+      case _ => throw new Exception("Unexpected object: " + pieces.toString)
     }
     simplifyInner(pieces, List.empty[NERText])
   }
