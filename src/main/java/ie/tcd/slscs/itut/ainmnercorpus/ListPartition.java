@@ -133,6 +133,9 @@ public class ListPartition {
                         if(!(entities[j] instanceof TextEntity)) {
                             throw new Exception("Unexpected entity: use split_sentences first");
                         }
+                        if(sentences[i].getEnd() > entities[j].getText().length()) {
+                            throw new Exception("Exceeds string: \"" + entities[j].getText() + "\" (wanted " + sentences[i].getEnd() + " from " + entities[j].getText().length());
+                        }
                         out.add(new TextEntity(entities[j].getText().substring(sentences[i].getStart(), sentences[i].getEnd())));
                         i++;
                     }
