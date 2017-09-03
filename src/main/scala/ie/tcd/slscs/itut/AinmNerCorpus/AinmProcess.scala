@@ -23,7 +23,8 @@
  */
 package ie.tcd.slscs.itut.AinmNerCorpus
 
-import java.io.{File, InputStream}
+import java.io._
+import java.nio.charset.Charset
 
 import ie.tcd.slscs.itut.ainmnercorpus.{EntityBase, ListPartition, SimpleEntity, TextEntity}
 import opennlp.tools.sentdetect.SentenceDetectorME
@@ -211,6 +212,10 @@ and filter is the NER type: person, organization, or location""")
   val files = AinmProcess.getFileList(dir)
   val docs: List[List[Paragraph]] = files.map{AinmProcess.readFile}
   val strings = docs.map{e => AinmProcess.processParagraphs(e, filter).mkString("\n")}.mkString("\n").replaceAll("\n+", "\n")
+  val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputname), Charset.forName("UTF-8")))
+  writer.write(strings)
+  writer.close()
+  System.exit(0)
 }
 
 // set tabstop=2
