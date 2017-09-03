@@ -26,7 +26,6 @@ package ie.tcd.slscs.itut.AinmNerCorpus
 import java.io._
 import java.nio.charset.Charset
 
-import ie.tcd.slscs.itut.ainmnercorpus.{EntityBase, ListPartition, SimpleEntity, TextEntity}
 import opennlp.tools.sentdetect.SentenceDetectorME
 import opennlp.tools.sentdetect.SentenceModel
 import opennlp.tools.tokenize.TokenizerME
@@ -85,12 +84,16 @@ object AinmProcess {
 
   abstract class NERText {
     def toText: String
+    def beforeText: String = ""
+    def afterText: String = ""
   }
   case class TextPart(text: String) extends NERText {
     def toText = text
   }
   case class EntityReference(text: String, kind: String) extends NERText {
     def toText = " <START:" + kind + "> " + text + " <END> "
+    override def beforeText: String = " <START:" + kind + "> "
+    override def afterText: String = " <END> "
   }
 
   /**
@@ -124,6 +127,7 @@ object AinmProcess {
         case EntityReference(a, b) :: xx => simplifyInner(xx, acc ++ List(TextPart(t), EntityReference(a, b)))
       }
       case Nil => acc
+      case _ => throw new Exception("Unexpected object: " + pieces.toString)
     }
     simplifyInner(pieces, List.empty[NERText])
   }
@@ -156,7 +160,7 @@ object AinmProcess {
   def filterNERType(kind: String, l: List[NERText]): List[NERText] = {
     def filterinner(n: NERText, kind: String): NERText = n match {
       case EntityReference(t, k) => {
-        if(k == kind) {
+        if(k == kind || kind == "") {
           EntityReference(t, k)
         } else {
           TextPart(t)
@@ -171,10 +175,20 @@ object AinmProcess {
   def splitParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{splitParagraph}.toArray
   def tokeniseParagraph(p: Paragraph): Array[Span] = tokdetect.tokenizePos(p.getText)
   def tokeniseParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{tokeniseParagraph}.toArray
-  def processParagaph(p: Paragraph, filter: String): String = {
-    ""
+  def splitNERText(in: NERText): String = in match {
+    case TextPart(t) => sentdetect.sentDetect(t).map{e => tokdetect.tokenize(e).mkString(" ")}.mkString("\n")
+    case EntityReference(t, _) => in.beforeText + tokdetect.tokenize(t).mkString(" ") + in.afterText
+    case _ => throw new Exception("Unexpected object " + in.toString)
   }
-  def processParagraphs(l: List[Paragraph], filter: String): List[String] = l.map{e => processParagaph(e, filter)}
+  def splitNER(in: List[NERText]): String = {
+    in.map{splitNERText}.mkString(" ").replaceAll(" +", " ").replaceAll("\n+", "\n")
+  }
+  def processParagraph(p: Paragraph, filter: String): String = {
+    val parts = p.children.map{ainmTextPieceToNER}
+    val filtered = filterNERType(filter, parts)
+    splitNER(filtered)
+  }
+  def processParagraphs(l: List[Paragraph], filter: String): List[String] = l.map{e => processParagraph(e, filter)}
 }
 
 object OpenNLPConverter extends App {
