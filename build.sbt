@@ -10,6 +10,8 @@ libraryDependencies +=  "org.apache.opennlp" % "opennlp-tools" % "1.8.1"
 
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
 
+mainClass in (Compile, run) := Some("ie.tcd.slscs.itut.AinmNerCorpus.OpenNLPConverter")
+
 libraryDependencies ++= {
         Seq(
             "org.scalatest" % "scalatest_2.10" % "2.0" % Test,

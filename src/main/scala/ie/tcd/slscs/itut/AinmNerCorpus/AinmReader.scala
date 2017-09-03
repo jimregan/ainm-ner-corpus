@@ -97,7 +97,7 @@ object TEIReader {
     TEIHeader(id, title, titlenote, forename, surname, birth, death, sex, floruit,
               birthplace, faith, schools, universities, occupations, authors)
   }
-  def readParagraphs(n: Node): List[Paragraph] = (n \\ "p").toList.map{readParagraph}.toList
+  def readParagraphs(n: Node): List[Paragraph] = (n \\ "p").toList.map{readParagraph}
   def readParagraph(n: Node): Paragraph = n match {
     case <p>{children @ _* }</p> => Paragraph(children.map{readParagraphPiece}.toList)
     case _ => throw new Exception("Unexpected element" + n.toString)

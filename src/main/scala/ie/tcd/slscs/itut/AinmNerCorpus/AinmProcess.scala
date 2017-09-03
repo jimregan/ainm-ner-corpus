@@ -23,16 +23,15 @@
  */
 package ie.tcd.slscs.itut.AinmNerCorpus
 
-import scala.xml._
-import scala.io.Source
-import java.io.FileInputStream
-import java.io.InputStream
+import java.io._
+import java.nio.charset.Charset
+
+import ie.tcd.slscs.itut.ainmnercorpus.{EntityBase, ListPartition, SimpleEntity, TextEntity}
 import opennlp.tools.sentdetect.SentenceDetectorME
 import opennlp.tools.sentdetect.SentenceModel
 import opennlp.tools.tokenize.TokenizerME
 import opennlp.tools.tokenize.TokenizerModel
 import opennlp.tools.util.Span
-import ie.tcd.slscs.itut.AinmNerCorpus._
 
 object AinmProcess {
   import scala.xml.XML
@@ -116,6 +115,39 @@ object AinmProcess {
     case PlaceName(id, bf, t, _, _) => EntityReference(t, "location")
     case EduInst(id, bf, t) => EntityReference(t, "location")
   }
+  def simplifyTextPieces(pieces: List[NERText]): List[NERText] = {
+    def simplifyInner(pieces: List[NERText], acc: List[NERText]): List[NERText] = pieces match {
+      case EntityReference(a, b) :: xs => simplifyInner(xs, acc :+ EntityReference(a,b))
+      case TextPart(t) :: xs => xs match {
+        case Nil => acc :+ TextPart(t)
+        case TextPart(tt) :: xx => simplifyInner(xx :+ TextPart(t + tt), acc)
+        case EntityReference(a, b) :: xx => simplifyInner(xx, acc ++ List(TextPart(t), EntityReference(a, b)))
+      }
+      case Nil => acc
+    }
+    simplifyInner(pieces, List.empty[NERText])
+  }
+  def filterNERParagraph(p: Paragraph, filt: String): List[NERText] = {
+    if(filt != null && filt != "") {
+      filterNERType(filt, p.children.map{ainmTextPieceToNER})
+    } else {
+      p.children.map{ainmTextPieceToNER}
+    }
+  }
+  def piecesFromFile(f: File, filter: String): List[List[NERText]] = {
+    val xmltext = XML.loadFile(f)
+    val rawparas = TEIReader.readParagraphs(xmltext)
+    rawparas.map{e => simplifyTextPieces(filterNERParagraph(e, filter))}
+  }
+  def piecesFromFilePath(s: String, filter: String): List[List[NERText]] = {
+    piecesFromFile(new File(s), filter)
+  }
+  def pieceToString(n: NERText): String = n match {
+    case TextPart(t) => t
+    case EntityReference(a, _) => a
+    case _ => throw new Exception("Unknown object " + n.toString)
+  }
+  def piecesToString(l: List[NERText]): String = l.map{pieceToString}.mkString("")
 
   /**
    * Filters the NER pieces to only the desired type; OpenNLP (and most other
@@ -134,22 +166,56 @@ object AinmProcess {
     }
     l.map{e => filterinner(e, kind)}
   }
+  implicit def convertNERTypeToJava(n: NERText): EntityBase = n match {
+    case EntityReference(t, k) => new SimpleEntity(t, k)
+    case TextPart(t) => new TextEntity(t)
+    case _ => throw new Exception("Unknown object " + n.toString)
+  }
 
   def splitParagraph(p: Paragraph): Array[Span] = sentdetect.sentPosDetect(p.getText)
-  def splitParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{splitParagraph}
+  def splitParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{splitParagraph}.toArray
   def tokeniseParagraph(p: Paragraph): Array[Span] = tokdetect.tokenizePos(p.getText)
-  def tokeniseParagraphs(l: List[Paragraph]): List[Array[Span]] = l.map{tokeniseParagraph}
+  def tokeniseParagraphs(l: List[Paragraph]): Array[Array[Span]] = l.map{tokeniseParagraph}.toArray
+  def processParagaph(p: Paragraph, filter: String): String = {
+    val sentences = splitParagraph(p)
+    val tokens = tokeniseParagraph(p)
+    val ner = filterNERParagraph(p, filter).toArray.map{convertNERTypeToJava}
+    ListPartition.makeText(ner, sentences, tokens)
+  }
+  def processParagraphs(l: List[Paragraph], filter: String): List[String] = l.map{e => processParagaph(e, filter)}
 }
 
 object OpenNLPConverter extends App {
-/*
+  if(args.length < 1 || args.length > 2) {
+    throw new Exception(s"""Usage: OpenNLPConverter directory [filter]
+Where directory is a directory containing the downloaded XML
+and filter is the NER type: person, organization, or location""")
+  }
   val dir = args(0)
-  if(dir == null || dir == "") {
+  val filter = if(args.length == 2) args(1) else ""
+  filter match {
+    case "person" | "organization" | "location" =>
+    case "" =>
+    case _ => throw new Exception("Filter can only be person, organization, or location")
+  }
+  val outputname = filter match {
+    case "person" => "person-ner.txt"
+    case "organization" => "org-ner.txt"
+    case "location" => "loc-ner.txt"
+    case "" => "all-ner.txt"
+  }
+  val directory = new File(dir)
+  if(dir == null || dir == "" || !directory.exists || !directory.isDirectory) {
     throw new Exception("Specify the directory containing the ainm corpus")
-  }*/
-  val dir = "/home/jim/www.ainm.ie/"
+  }
+  val mydir = "/home/jim/www.ainm.ie/"
   val files = AinmProcess.getFileList(dir)
-  val docs = files.map{AinmProcess.readFile}
+  val docs: List[List[Paragraph]] = files.map{AinmProcess.readFile}
+  val strings = docs.map{e => AinmProcess.processParagraphs(e, filter).mkString("\n")}.mkString("\n").replaceAll("\n+", "\n")
+  val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputname), Charset.forName("UTF-8")))
+  writer.write(strings)
+  writer.close()
+  System.exit(0)
 }
 
 // set tabstop=2
