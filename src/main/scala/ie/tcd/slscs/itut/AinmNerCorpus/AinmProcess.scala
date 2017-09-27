@@ -116,7 +116,7 @@ object AinmProcess {
     case Anchor(t, _) => TextPart(t)
     case Party(bf, t) => EntityReference(t, "organization")
     case PlaceName(id, bf, t, _, _) => EntityReference(t, "location")
-    case EduInst(id, bf, t) => EntityReference(t, "location")
+    case EduInst(id, t, eduname) => EntityReference(t, "location")
   }
   def simplifyTextPieces(pieces: List[NERText]): List[NERText] = {
     def simplifyInner(pieces: List[NERText], acc: List[NERText]): List[NERText] = pieces match {
@@ -208,6 +208,7 @@ and filter is the NER type: person, organization, or location""")
     case "person" => "person-ner.txt"
     case "organization" => "org-ner.txt"
     case "location" => "loc-ner.txt"
+    case "text" => "ner-plain.txt"
     case "" => "all-ner.txt"
   }
   val directory = new File(dir)

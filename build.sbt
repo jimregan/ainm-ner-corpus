@@ -2,11 +2,13 @@ name := "AinmNerCorpus"
 
 organization := "ie.tcd.slscs.itut"
 
-version := "0.2-SNAPSHOT"
+version := "0.3-SNAPSHOT"
 
 scalaVersion := "2.10.2"
 
 libraryDependencies +=  "org.apache.opennlp" % "opennlp-tools" % "1.8.1"
+
+javaOptions += "-Xmx1G"
 
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
 
