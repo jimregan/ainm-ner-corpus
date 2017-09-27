@@ -8,6 +8,8 @@ scalaVersion := "2.10.2"
 
 libraryDependencies +=  "org.apache.opennlp" % "opennlp-tools" % "1.8.1"
 
+javaOptions += "-Xmx1G"
+
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
 
 mainClass in (Compile, run) := Some("ie.tcd.slscs.itut.AinmNerCorpus.OpenNLPConverter")
